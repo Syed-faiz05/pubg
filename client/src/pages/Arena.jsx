@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Clock, Sparkles, Wand2, Image as ImageIcon,
     AlertCircle, Check, ArrowRight, Zap, Target,
-    Maximize2, Command, Terminal, Activity, Eye, Brain
+    Maximize2, Command, Terminal, Activity, Eye, Brain, Focus
 } from 'lucide-react';
 
 const Arena = () => {
@@ -26,19 +26,19 @@ const Arena = () => {
             case 1: return {
                 title: "VISUAL LOGIC", subtitle: "DECODE THE SIGNAL",
                 color: "#40f0ff", icon: <Target size={24} />,
-                noiseOpacity: 0.02,
+                noiseOpacity: 0.05,
                 uiStyle: "clean"
             };
             case 2: return {
                 title: "SIGNAL DETECTION", subtitle: "SYNTHESIZE PATTERNS",
                 color: "#d56aff", icon: <Eye size={24} />,
-                noiseOpacity: 0.08, // More noise
+                noiseOpacity: 0.1, // More noise
                 uiStyle: "glitch"
             };
             case 3: return {
                 title: "COGNITIVE PRESSURE", subtitle: "PERFORM UNDER STRESS",
                 color: "#ff5c7f", icon: <Brain size={24} />,
-                noiseOpacity: 0.05,
+                noiseOpacity: 0.08,
                 uiStyle: "intense" // Heartbeat effect
             };
             case 4: return {
@@ -94,7 +94,7 @@ const Arena = () => {
         setTimeout(() => {
             setIsGenerating(false);
             setGeneratedResult({
-                id: 1,
+                id: 1, // Using consistent ID for now, simulate same visual target
                 src: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=600&auto=format&fit=crop",
                 score: 0.85 + (Math.random() * 0.14) // Mock score
             });
@@ -130,17 +130,17 @@ const Arena = () => {
             position: 'relative', overflow: 'hidden'
         }}>
 
-            {/* REACTIVE AMBIENT LIGHTING */}
+            {/* REACTIVE AMBIENT LIGHTING via Volumetric Fog Sim */}
             <motion.div
                 className="absolute inset-0 pointer-events-none"
                 animate={{
-                    background: `radial-gradient(circle at 60% 50%, ${currentLevelData.color}20 0%, transparent 60%)`,
+                    background: `radial-gradient(circle at 30% 50%, ${currentLevelData.color}10 0%, transparent 60%)`,
                     opacity: isStressMode && timer < 10 ? [0.4, 0.6, 0.4] : 0.4 + (inputIntensity * 0.3)
                 }}
-                transition={{ duration: isStressMode ? 0.5 : 0.5 }}
+                transition={{ duration: isStressMode ? 0.5 : 2, repeat: Infinity, repeatType: 'reverse' }}
             />
 
-            {/* Background Texture - Digital Noise */}
+            {/* Background Texture - Obsidian / Digital Noise */}
             <div className="absolute inset-0 pointer-events-none"
                 style={{
                     opacity: currentLevelData.noiseOpacity,
@@ -185,71 +185,136 @@ const Arena = () => {
                 style={{ position: 'relative', zIndex: 10, height: '100%', display: 'flex' }}
             >
 
-                {/* LEFT: TARGET SIGNAL (Active Visual Anchor) */}
-                <div style={{ flex: '0 0 45%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {/* LEFT: SIGNAL CHAMBER (Thick Glass with Fluid Sim) */}
+                <div style={{
+                    flex: '0 0 50%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderRight: '1px solid rgba(255,255,255,0.05)',
+                    background: 'radial-gradient(ellipse at left, rgba(20,20,30,0.4) 0%, transparent 70%)'
+                }}>
                     <motion.div
                         animate={{
-                            boxShadow: `0 0 ${20 + (inputIntensity * 40)}px ${currentLevelData.color}20`,
-                            scale: isStressMode && timer < 15 ? [1, 1.02, 1] : 1,
-                            x: isGlitchMode ? [-1, 1, -1] : 0
+                            boxShadow: `0 0 ${30 + (inputIntensity * 50)}px ${currentLevelData.color}15`,
+                            scale: isStressMode && timer < 15 ? [1, 1.01, 1] : 1
                         }}
                         transition={{
                             scale: { duration: 0.5, repeat: Infinity },
-                            x: { duration: 0.1, repeat: Infinity, repeatDelay: Math.random() * 2 }
                         }}
                         style={{
-                            width: '400px', height: '600px', borderRadius: '4px',
+                            width: '480px', height: '640px', borderRadius: '12px',
                             overflow: 'hidden', position: 'relative',
-                            border: '1px solid rgba(255,255,255,0.1)'
+                            // Frosted Glass "Chamber" Effect
+                            background: 'rgba(255,255,255,0.02)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderTop: '1px solid rgba(255,255,255,0.2)',
+                            boxShadow: `
+                                0 20px 40px -10px rgba(0,0,0,0.5), 
+                                inset 0 0 20px rgba(255,255,255,0.05),
+                                0 0 0 1px rgba(0,0,0,0.2)
+                            `
                         }}
                     >
-                        <img
-                            src="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=800"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'contrast(1.1) brightness(1.1)' }}
+                        {/* Bioluminescent Fluid Background Simulation */}
+                        <motion.div
+                            animate={{
+                                backgroundPosition: ['0% 0%', '100% 100%'],
+                                rotate: [0, 5, -5, 0]
+                            }}
+                            transition={{
+                                duration: 20, repeat: Infinity, repeatType: 'reverse', ease: 'linear'
+                            }}
+                            style={{
+                                position: 'absolute', inset: '-50%',
+                                background: `
+                                    radial-gradient(circle at 50% 50%, ${currentLevelData.color}40 0%, transparent 60%),
+                                    radial-gradient(circle at 80% 20%, #7d2ae840 0%, transparent 50%)
+                                `,
+                                filter: 'blur(60px)', opacity: 0.6
+                            }}
                         />
-                        {/* Status Overlay */}
-                        {!isArchitectMode && (
-                            <div style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                <span style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '2px', color: 'rgba(255,255,255,0.8)' }}>LIVE FEED</span>
+
+                        {/* Valid Signal Image */}
+                        <div style={{ position: 'relative', width: '100%', height: '100%', padding: '20px' }}>
+                            <div style={{
+                                width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden',
+                                border: `1px solid ${currentLevelData.color}30`,
+                                position: 'relative'
+                            }}>
+                                <img
+                                    src="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=800"
+                                    style={{
+                                        width: '100%', height: '100%', objectFit: 'cover',
+                                        filter: 'contrast(1.2) brightness(1.1) saturate(1.2)',
+                                        opacity: 0.9
+                                    }}
+                                />
+                                {/* Scanline Overlay */}
+                                <div style={{
+                                    position: 'absolute', inset: 0,
+                                    background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))',
+                                    backgroundSize: '100% 2px, 3px 100%', pointerEvents: 'none'
+                                }} />
                             </div>
-                        )}
+                        </div>
+
+                        {/* Chamber UI Overlay */}
+                        <div style={{ position: 'absolute', top: '30px', left: '30px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" style={{ boxShadow: '0 0 10px red' }} />
+                            <span style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '2px', color: 'rgba(255,255,255,0.9)' }}>
+                                LIVE SIGNAL FEED
+                            </span>
+                        </div>
+
+                        <div style={{ position: 'absolute', bottom: '30px', right: '30px', textAlign: 'right' }}>
+                            <Activity size={16} color={currentLevelData.color} style={{ marginLeft: 'auto', marginBottom: '4px' }} />
+                            <div style={{ fontSize: '0.6rem', color: currentLevelData.color, letterSpacing: '1px' }}>FREQ: 82.44 HZ</div>
+                        </div>
+
                     </motion.div>
                 </div>
 
 
-                {/* RIGHT: COMMAND CENTER */}
+                {/* RIGHT: HOLOGRAPHIC INPUT TERMINAL */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 6rem' }}>
 
-                    {/* HUD HEADER */}
+                    {/* FUI HUD HEADER */}
                     {!isArchitectMode && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                            <div>
-                                <div style={{ fontSize: '0.8rem', color: '#666', letterSpacing: '2px', marginBottom: '4px' }}>MISSION OBJECTIVE</div>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>RECONSTRUCT VISUAL DATA</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                <div style={{ width: '40px', height: '40px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {currentLevelData.icon}
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '0.7rem', color: '#666', letterSpacing: '2px', marginBottom: '2px' }}>MISSION OBJECTIVE</div>
+                                    <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'white', letterSpacing: '1px' }}>RECONSTRUCT VISUAL DATA</div>
+                                </div>
                             </div>
                             <div style={{ textAlign: 'right' }}>
                                 <div style={{
-                                    fontSize: '3rem', fontWeight: 700, lineHeight: 1,
+                                    fontSize: '3.5rem', fontWeight: 500, lineHeight: 1,
                                     color: timer < 10 ? '#ef4444' : 'white',
-                                    fontFamily: 'var(--font-mono)'
+                                    fontFamily: 'var(--font-mono)', letterSpacing: '-2px'
                                 }}>
-                                    {timer < 10 ? `0${timer}` : timer}<span style={{ fontSize: '1rem', opacity: 0.5 }}>s</span>
+                                    {timer < 10 ? `0${timer}` : timer}<span style={{ fontSize: '1rem', opacity: 0.5, letterSpacing: '0' }}>s</span>
                                 </div>
                             </div>
                         </div>
                     )}
 
 
-                    {/* THOUGHT-COMMIT ZONE */}
-                    <div style={{ position: 'relative' }}>
+                    {/* FLOATING GLASS INPUT TERMINAL */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                        style={{ position: 'relative', marginTop: '1rem' }}
+                    >
+                        {/* Placeholder Text Overlay */}
                         <AnimatePresence>
                             {!interactionStarted && (
                                 <motion.div
                                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                     style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
                                 >
-                                    <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'rgba(255,255,255,0.2)', lineHeight: 1.2 }}>
+                                    <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'rgba(255,255,255,0.1)', lineHeight: 1.1 }}>
                                         DESCRIBE<br />THE SIGNAL<br />TO ENGAGE
                                     </h2>
                                 </motion.div>
@@ -265,48 +330,57 @@ const Arena = () => {
                             }}
                             spellCheck="false"
                             style={{
-                                width: '100%', background: 'transparent', border: 'none', resize: 'none',
-                                height: '200px', fontSize: '2rem', lineHeight: '1.4', fontWeight: 600,
+                                width: '100%', background: 'transparent',
+                                border: 'none', resize: 'none',
+                                height: '220px', fontSize: '2rem', lineHeight: '1.3', fontWeight: 500,
                                 color: interactionStarted ? 'white' : 'transparent',
                                 fontFamily: 'var(--font-sans)', outline: 'none',
-                                textShadow: `0 0 ${inputIntensity * 20}px ${currentLevelData.color}60`,
-                                caretColor: currentLevelData.color
+                                textShadow: `0 0 ${10 + (inputIntensity * 10)}px ${currentLevelData.color}80`,
+                                caretColor: currentLevelData.color,
                             }}
                         />
 
-                        {/* Input Feedback Line */}
-                        <motion.div
-                            style={{
-                                height: '2px', width: '100%', background: '#333', marginTop: '1rem',
-                                position: 'relative', overflow: 'hidden'
-                            }}
-                        >
+                        {/* Progressive Neural Feedback Bar */}
+                        <div style={{
+                            height: '4px', width: '100%', background: 'rgba(255,255,255,0.05)', marginTop: '1rem',
+                            position: 'relative', overflow: 'hidden', borderRadius: '2px'
+                        }}>
                             <motion.div
                                 style={{
                                     position: 'absolute', inset: 0, background: currentLevelData.color,
-                                    width: `${Math.min((prompt.length / 100) * 100, 100)}%`
+                                    width: `${Math.min((prompt.length / 100) * 100, 100)}%`,
+                                    boxShadow: `0 0 20px ${currentLevelData.color}`
                                 }}
                             />
-                        </motion.div>
-                    </div>
+                        </div>
+                    </motion.div>
 
 
-                    {/* CONTEXTUAL COMMIT ACTIONS */}
-                    <div style={{ height: '80px', marginTop: '3rem', display: 'flex', alignItems: 'center' }}>
+                    {/* CONTEXTUAL ACTION DECK */}
+                    <div style={{ height: '100px', marginTop: '3rem', display: 'flex', alignItems: 'center' }}>
                         <AnimatePresence mode="wait">
                             {/* STATE: READY TO GENERATE */}
                             {prompt.length > 5 && !isGenerating && !generatedResult && (
                                 <motion.button
-                                    initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                                     onClick={handleGenerate}
+                                    whileTap={{ scale: 0.95, y: 2 }}
                                     style={{
-                                        background: 'transparent', border: `1px solid ${currentLevelData.color}`,
-                                        color: currentLevelData.color, padding: '16px 32px',
-                                        fontSize: '1rem', fontWeight: 700, letterSpacing: '2px',
+                                        background: 'transparent',
+                                        border: `1px solid ${currentLevelData.color}40`,
+                                        borderBottom: `4px solid ${currentLevelData.color}`, // Physical depth
+                                        color: currentLevelData.color, padding: '18px 40px',
+                                        fontSize: '0.9rem', fontWeight: 800, letterSpacing: '2px',
                                         textTransform: 'uppercase', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', gap: '12px'
+                                        display: 'flex', alignItems: 'center', gap: '15px',
+                                        boxShadow: `0 5px 20px -5px ${currentLevelData.color}20`,
+                                        transition: 'all 0.2s',
+                                        clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)'
                                     }}
-                                    whileHover={{ background: currentLevelData.color, color: 'black', boxShadow: `0 0 30px ${currentLevelData.color}60` }}
+                                    whileHover={{
+                                        background: `${currentLevelData.color}10`,
+                                        boxShadow: `0 0 30px ${currentLevelData.color}40`
+                                    }}
                                 >
                                     Initiate Sequence <Target size={18} />
                                 </motion.button>
@@ -318,9 +392,9 @@ const Arena = () => {
                                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                                     style={{ display: 'flex', alignItems: 'center', gap: '16px', color: currentLevelData.color }}
                                 >
-                                    <Activity className="animate-pulse" size={24} />
-                                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '1rem', letterSpacing: '2px' }}>
-                                        COMPILING NEURAL PATHWAYS...
+                                    <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: currentLevelData.color, borderTopColor: 'transparent' }} />
+                                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', letterSpacing: '2px', fontWeight: 700 }}>
+                                        COMPILING NEURAL PATHWAYS <span className="animate-pulse">_</span>
                                     </span>
                                 </motion.div>
                             )}
@@ -331,21 +405,30 @@ const Arena = () => {
                                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                                     style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '20px' }}
                                 >
-                                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', padding: '16px', borderLeft: '2px solid #4dffb5' }}>
-                                        <div style={{ fontSize: '0.8rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>System Output</div>
-                                        <div style={{ fontSize: '1.2rem', color: '#4dffb5', fontWeight: 700 }}>{Math.round(generatedResult.score * 100)}% CORRELATION</div>
+                                    <div style={{
+                                        flex: 1, background: 'rgba(255,255,255,0.03)', padding: '20px',
+                                        borderLeft: `2px solid ${currentLevelData.color}`,
+                                        backdropFilter: 'blur(10px)'
+                                    }}>
+                                        <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px' }}>System Output</div>
+                                        <div style={{ fontSize: '1.5rem', color: currentLevelData.color, fontWeight: 700, letterSpacing: '1px' }}>
+                                            {Math.round(generatedResult.score * 100)}% CORRELATION
+                                        </div>
                                     </div>
-                                    <button
+                                    <motion.button
                                         onClick={handleConfirm}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
                                         style={{
                                             background: 'white', color: 'black', border: 'none',
-                                            padding: '20px 40px', fontSize: '1.1rem', fontWeight: 800,
-                                            letterSpacing: '1px', textTransform: 'uppercase',
-                                            cursor: 'pointer', boxShadow: '0 0 40px rgba(255,255,255,0.2)'
+                                            padding: '24px 48px', fontSize: '1.2rem', fontWeight: 900,
+                                            letterSpacing: '2px', textTransform: 'uppercase',
+                                            cursor: 'pointer', boxShadow: '0 0 50px rgba(255,255,255,0.3)',
+                                            clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)'
                                         }}
                                     >
                                         Confirm
-                                    </button>
+                                    </motion.button>
                                 </motion.div>
                             )}
                         </AnimatePresence>
