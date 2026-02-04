@@ -39,6 +39,15 @@ const useGameStore = create((set, get) => ({
         };
     }),
 
+    // Game Configuration
+    gameConfig: {
+        mode: 'solo', // 'solo' | 'squad' | 'ranked'
+        rounds: 4,
+        timeLimit: 60,
+        difficulty: 'normal', // 'easy' | 'normal' | 'hard'
+    },
+    setGameConfig: (config) => set((state) => ({ gameConfig: { ...state.gameConfig, ...config } })),
+
     // Socket Status
     isConnected: false,
     setIsConnected: (status) => set({ isConnected: status }),

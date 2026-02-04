@@ -2,24 +2,32 @@ import React, { useState, useEffect, useRef } from 'react';
 import useGameStore from '../store/useGameStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Zap, MousePointer2, AlertTriangle, Hexagon } from 'lucide-react';
-import Navbar from '../components/Navbar'; // Keeping for Nav, but might hide it or float it
+import Navbar from '../components/Navbar';
 
 const Lobby = () => {
-    const { setCurrentView, playerName } = useGameStore();
+    const { setCurrentView, playerName, gameConfig } = useGameStore();
 
     // Game State
     const [charge, setCharge] = useState(0);
     const [isReady, setIsReady] = useState(false);
     const [isLaunching, setIsLaunching] = useState(false);
 
-    // Mock Players (Cardinal Directions)
-    // 0: Bottom (User), 1: Top, 2: Left, 3: Right
-    const [players, setPlayers] = useState([
-        { id: 0, name: playerName || 'AGENT_LOCAL', status: 'idle', color: 'var(--tac-cyan)' }, // User
-        { id: 1, name: 'NEXUS_PRIME', status: 'idle', color: '#ff3864' },
-        { id: 2, name: 'VECTOR_7', status: 'idle', color: '#bc13fe' },
-        { id: 3, name: 'NULL_POINTER', status: 'idle', color: '#ffe600' }
-    ]);
+    // Mock Players based on Mode
+    const [players, setPlayers] = useState([]);
+
+    useEffect(() => {
+        // Initialize Players based on Config
+        const isSolo = gameConfig?.mode === 'solo';
+
+        const initialPlayers = [
+            { id: 0, name: playerName || 'AGENT_LOCAL', status: 'idle', color: 'var(--tac-cyan)' }, // User
+            { id: 1, name: isSolo ? 'SEARCHING...' : 'NEXUS_PRIME', status: 'idle', color: '#ff3864' },
+            { id: 2, name: isSolo ? 'SEARCHING...' : 'VECTOR_7', status: 'idle', color: '#bc13fe' },
+            { id: 3, name: isSolo ? 'SEARCHING...' : 'NULL_POINTER', status: 'idle', color: '#ffe600' }
+        ];
+        setPlayers(initialPlayers);
+    }, [gameConfig, playerName]);
+
 
     // Hold-to-Ready Logic
     const intervalRef = useRef(null);
@@ -55,22 +63,30 @@ const Lobby = () => {
 
     // Simulation of Opponents Readying Up
     useEffect(() => {
-        const timeouts = [];
+        if (!isReady) return; // Wait for user to be ready first? Or independent? 
+        // Let's make opponents ready up after user is ready for dramatic effect
 
-        // Randomly ready up opponents
-        [1, 2, 3].forEach(idx => {
-            const delay = 1000 + Math.random() * 4000;
+        const timeouts = [];
+        const opponents = [1, 2, 3];
+
+        opponents.forEach(idx => {
+            const delay = 1000 + Math.random() * 3000;
             timeouts.push(setTimeout(() => {
-                updatePlayerStatus(idx, 'locked');
+                // If solo, we "Sort of" find them then lock them
+                if (gameConfig?.mode === 'solo') {
+                    setPlayers(prev => prev.map((p, i) => i === idx ? { ...p, name: `OPPONENT_0${idx}`, status: 'locked' } : p));
+                } else {
+                    updatePlayerStatus(idx, 'locked');
+                }
             }, delay));
         });
 
         return () => timeouts.forEach(clearTimeout);
-    }, []);
+    }, [isReady, gameConfig]);
 
     // Auto-Launch when all ready
     useEffect(() => {
-        if (players.every(p => p.status === 'locked')) {
+        if (players.length > 0 && players.every(p => p.status === 'locked')) {
             setTimeout(() => setIsLaunching(true), 1000);
             setTimeout(() => setCurrentView('arena'), 4000); // Launch delay
         }
@@ -82,7 +98,6 @@ const Lobby = () => {
     const Core = () => {
         const readiness = players.filter(p => p.status === 'locked').length;
         const speed = isLaunching ? 0.2 : 10 - (readiness * 2); // Faster as more ready
-        const scale = isLaunching ? 20 : 1 + (readiness * 0.2);
         const glowColor = isLaunching ? 'white' : 'var(--tac-cyan)';
 
         return (
@@ -121,7 +136,6 @@ const Lobby = () => {
     // pos: 0=bottom, 1=top, 2=left, 3=right
     const PlayerVector = ({ player, pos }) => {
         const isLocked = player.status === 'locked';
-        const isMe = pos === 0;
 
         // Transforms for positioning
         const getStyle = () => {
@@ -197,7 +211,16 @@ const Lobby = () => {
             {/* Ambient Background */}
             <div className="grain-overlay" />
             <div className="vignette" />
-            <Navbar /> {/* Keep simplified header */}
+
+            {/* HUD Top Left */}
+            <div style={{ position: 'absolute', top: '2rem', left: '2rem', zIndex: 20 }}>
+                <div style={{ color: 'var(--tac-cyan)', fontSize: '0.8rem', letterSpacing: '2px', fontWeight: 700 }}>
+                    LOBBY // {gameConfig?.mode?.toUpperCase() || 'SOLO'}
+                </div>
+                <div style={{ color: '#666', fontSize: '0.7rem' }}>
+                    SECTOR: 0{gameConfig?.rounds || 4} // DIFF: {gameConfig?.difficulty?.toUpperCase() || 'NORMAL'}
+                </div>
+            </div>
 
             {/* Main Stage */}
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

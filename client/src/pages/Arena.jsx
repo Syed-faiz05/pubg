@@ -4,12 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Clock, Sparkles, Wand2, Image as ImageIcon,
     AlertCircle, Check, ArrowRight, Zap, Target,
-    Maximize2, Command, Terminal, Activity
+    Maximize2, Command, Terminal, Activity, Eye, Brain
 } from 'lucide-react';
 
 const Arena = () => {
-    const { currentView, setCurrentView, gameState, advanceLevel } = useGameStore();
-    const [timer, setTimer] = useState(60);
+    const { currentView, setCurrentView, gameState, advanceLevel, gameConfig } = useGameStore();
+    const [timer, setTimer] = useState(gameConfig?.timeLimit || 60);
     const [prompt, setPrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedResult, setGeneratedResult] = useState(null);
@@ -17,20 +17,52 @@ const Arena = () => {
     const [interactionStarted, setInteractionStarted] = useState(false);
     const inputRef = useRef(null);
 
-    // Level Configs
-    const LEVEL_DATA = {
-        1: {
-            title: "VISUAL LOGIC",
-            subtitle: "DECODE THE SIGNAL",
-            color: "#40f0ff", // Neon Cyan
-            accent: "cyan",
-            icon: <Target size={24} />
-        },
-        2: { title: "STYLE FUSION", subtitle: "SYNTHESIZE AESTHETICS", color: "#d56aff", accent: "purple", icon: <Wand2 size={24} /> },
-        3: { title: "PRECISION", subtitle: "EXACT MATCH REQUIRED", color: "#ff5c7f", accent: "red", icon: <Maximize2 size={24} /> },
-        4: { title: "MASTERY", subtitle: "BLIND EXECUTION", color: "#4dffb5", accent: "green", icon: <Zap size={24} /> },
+    // Current Level Info
+    const currentLevel = gameState.currentLevel;
+
+    // Level Specific Configurations (The PUBG Logic)
+    const getLevelConfig = (level) => {
+        switch (level) {
+            case 1: return {
+                title: "VISUAL LOGIC", subtitle: "DECODE THE SIGNAL",
+                color: "#40f0ff", icon: <Target size={24} />,
+                noiseOpacity: 0.02,
+                uiStyle: "clean"
+            };
+            case 2: return {
+                title: "SIGNAL DETECTION", subtitle: "SYNTHESIZE PATTERNS",
+                color: "#d56aff", icon: <Eye size={24} />,
+                noiseOpacity: 0.08, // More noise
+                uiStyle: "glitch"
+            };
+            case 3: return {
+                title: "COGNITIVE PRESSURE", subtitle: "PERFORM UNDER STRESS",
+                color: "#ff5c7f", icon: <Brain size={24} />,
+                noiseOpacity: 0.05,
+                uiStyle: "intense" // Heartbeat effect
+            };
+            case 4: return {
+                title: "ARCHITECT MODE", subtitle: "TOTAL MASTERY",
+                color: "#4dffb5", icon: <Zap size={24} />,
+                noiseOpacity: 0,
+                uiStyle: "minimal" // UI Recedes
+            };
+            default: return { title: "UNKNOWN", color: "#fff" };
+        }
     };
-    const currentLevelData = LEVEL_DATA[gameState.currentLevel] || LEVEL_DATA[1];
+
+    const currentLevelData = getLevelConfig(currentLevel);
+
+    // Reset per level
+    useEffect(() => {
+        setTimer(gameConfig?.timeLimit || 60);
+        setPrompt('');
+        setGeneratedResult(null);
+        setIsGenerating(false);
+        setIntroState('reveal');
+        setInteractionStarted(false);
+    }, [currentLevel, gameConfig]);
+
 
     // Cinematic Intro Sequence
     useEffect(() => {
@@ -44,7 +76,7 @@ const Arena = () => {
             clearTimeout(transitionTimer);
             clearTimeout(activeTimer);
         };
-    }, []);
+    }, [currentLevel]);
 
     // Timer Logic - Starts only after intro
     useEffect(() => {
@@ -54,24 +86,17 @@ const Arena = () => {
         }
     }, [introState, generatedResult, isGenerating, timer]);
 
-    const handlePromptChange = (e) => {
-        const val = e.target.value;
-        setPrompt(val);
-        if (!interactionStarted && val.length > 0) {
-            setInteractionStarted(true);
-        }
-    };
-
     const handleGenerate = () => {
         if (!prompt.trim()) return;
         setIsGenerating(true);
 
+        // Simulation delay varies by level?
         setTimeout(() => {
             setIsGenerating(false);
             setGeneratedResult({
                 id: 1,
                 src: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=600&auto=format&fit=crop",
-                score: 0.92
+                score: 0.85 + (Math.random() * 0.14) // Mock score
             });
         }, 2200);
     };
@@ -79,7 +104,9 @@ const Arena = () => {
     const handleConfirm = () => {
         if (!generatedResult) return;
         const score = Math.round(generatedResult.score * 100);
-        if (gameState.currentLevel < 4) {
+
+        // Use configured rounds
+        if (currentLevel < (gameConfig?.rounds || 4)) {
             advanceLevel(score);
         } else {
             advanceLevel(score);
@@ -89,6 +116,11 @@ const Arena = () => {
 
     // Calculate intensity based on input length
     const inputIntensity = Math.min(prompt.length / 50, 1);
+
+    // Dynamic UI Styles based on Round
+    const isArchitectMode = currentLevelData.uiStyle === 'minimal';
+    const isStressMode = currentLevelData.uiStyle === 'intense';
+    const isGlitchMode = currentLevelData.uiStyle === 'glitch';
 
     return (
         <div style={{
@@ -102,14 +134,18 @@ const Arena = () => {
             <motion.div
                 className="absolute inset-0 pointer-events-none"
                 animate={{
-                    background: `radial-gradient(circle at 60% 50%, ${currentLevelData.color}20 0%, transparent 60%)`
+                    background: `radial-gradient(circle at 60% 50%, ${currentLevelData.color}20 0%, transparent 60%)`,
+                    opacity: isStressMode && timer < 10 ? [0.4, 0.6, 0.4] : 0.4 + (inputIntensity * 0.3)
                 }}
-                style={{ opacity: 0.4 + (inputIntensity * 0.3), transition: 'opacity 0.5s ease' }}
+                transition={{ duration: isStressMode ? 0.5 : 0.5 }}
             />
 
             {/* Background Texture - Digital Noise */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+            <div className="absolute inset-0 pointer-events-none"
+                style={{
+                    opacity: currentLevelData.noiseOpacity,
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
+                }}
             />
 
             {/* INTRO TITLE SEQUENCE */}
@@ -120,6 +156,9 @@ const Arena = () => {
                         exit={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }}
                         transition={{ duration: 0.8 }}
                     >
+                        <h2 style={{ color: currentLevelData.color, letterSpacing: '0.3em', textTransform: 'uppercase', fontSize: '1.2rem', marginBottom: '1rem', fontWeight: 600 }}>
+                            Round 0{gameState.currentLevel}
+                        </h2>
                         <h1 style={{
                             fontSize: '6rem', fontWeight: 900, color: 'white',
                             letterSpacing: '-0.05em', lineHeight: 0.9,
@@ -151,9 +190,13 @@ const Arena = () => {
                     <motion.div
                         animate={{
                             boxShadow: `0 0 ${20 + (inputIntensity * 40)}px ${currentLevelData.color}20`,
-                            scale: [1, 1.01, 1]
+                            scale: isStressMode && timer < 15 ? [1, 1.02, 1] : 1,
+                            x: isGlitchMode ? [-1, 1, -1] : 0
                         }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                        transition={{
+                            scale: { duration: 0.5, repeat: Infinity },
+                            x: { duration: 0.1, repeat: Infinity, repeatDelay: Math.random() * 2 }
+                        }}
                         style={{
                             width: '400px', height: '600px', borderRadius: '4px',
                             overflow: 'hidden', position: 'relative',
@@ -165,10 +208,12 @@ const Arena = () => {
                             style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'contrast(1.1) brightness(1.1)' }}
                         />
                         {/* Status Overlay */}
-                        <div style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                            <span style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '2px', color: 'rgba(255,255,255,0.8)' }}>LIVE FEED</span>
-                        </div>
+                        {!isArchitectMode && (
+                            <div style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                                <span style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '2px', color: 'rgba(255,255,255,0.8)' }}>LIVE FEED</span>
+                            </div>
+                        )}
                     </motion.div>
                 </div>
 
@@ -177,17 +222,23 @@ const Arena = () => {
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 6rem' }}>
 
                     {/* HUD HEADER */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                        <div>
-                            <div style={{ fontSize: '0.8rem', color: '#666', letterSpacing: '2px', marginBottom: '4px' }}>MISSION OBJECTIVE</div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>RECONSTRUCT VISUAL DATA</div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '3rem', fontWeight: 700, lineHeight: 1, color: timer < 10 ? '#ef4444' : 'white', fontFamily: 'var(--font-mono)' }}>
-                                {timer < 10 ? `0${timer}` : timer}<span style={{ fontSize: '1rem', opacity: 0.5 }}>s</span>
+                    {!isArchitectMode && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                            <div>
+                                <div style={{ fontSize: '0.8rem', color: '#666', letterSpacing: '2px', marginBottom: '4px' }}>MISSION OBJECTIVE</div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>RECONSTRUCT VISUAL DATA</div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                                <div style={{
+                                    fontSize: '3rem', fontWeight: 700, lineHeight: 1,
+                                    color: timer < 10 ? '#ef4444' : 'white',
+                                    fontFamily: 'var(--font-mono)'
+                                }}>
+                                    {timer < 10 ? `0${timer}` : timer}<span style={{ fontSize: '1rem', opacity: 0.5 }}>s</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
 
                     {/* THOUGHT-COMMIT ZONE */}
@@ -208,7 +259,10 @@ const Arena = () => {
                         <textarea
                             ref={inputRef}
                             value={prompt}
-                            onChange={handlePromptChange}
+                            onChange={(e) => {
+                                setPrompt(e.target.value);
+                                if (!interactionStarted && e.target.value.length > 0) setInteractionStarted(true);
+                            }}
                             spellCheck="false"
                             style={{
                                 width: '100%', background: 'transparent', border: 'none', resize: 'none',
@@ -279,7 +333,7 @@ const Arena = () => {
                                 >
                                     <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', padding: '16px', borderLeft: '2px solid #4dffb5' }}>
                                         <div style={{ fontSize: '0.8rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>System Output</div>
-                                        <div style={{ fontSize: '1.2rem', color: '#4dffb5', fontWeight: 700 }}>92% CORRELATION</div>
+                                        <div style={{ fontSize: '1.2rem', color: '#4dffb5', fontWeight: 700 }}>{Math.round(generatedResult.score * 100)}% CORRELATION</div>
                                     </div>
                                     <button
                                         onClick={handleConfirm}
