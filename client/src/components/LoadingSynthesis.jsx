@@ -3,19 +3,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const LoadingSynthesis = ({ levelData, onComplete }) => {
     const [progress, setProgress] = useState(0);
-    const [phase, setPhase] = useState('chaos'); // 'chaos', 'align', 'synthesis', 'complete'
+    const [phase, setPhase] = useState('detect'); // 'detect', 'synthesize', 'polish', 'complete'
 
-    // sequence logic
+    // Ensure we have a valid color or fallback
+    const color = levelData?.color || '#40f0ff';
+
+    // Sequence Sequence Logic
     useEffect(() => {
         const timers = [];
 
-        // 0-40%: Rapid Data Ingest (Chaos)
-        timers.push(setTimeout(() => setPhase('align'), 1500));
+        // 0-40%: Analyzing Visual Geometry
+        timers.push(setTimeout(() => setPhase('synthesize'), 1500));
 
-        // 40-80%: Structural Alignment (Order)
-        timers.push(setTimeout(() => setPhase('synthesis'), 3000));
+        // 40-80%: Synthesizing Environment
+        timers.push(setTimeout(() => setPhase('polish'), 3000));
 
-        // 80-100%: Final Locking
+        // 80-100%: Preparing Arena
         timers.push(setTimeout(() => {
             setPhase('complete');
             setTimeout(onComplete, 800);
@@ -24,11 +27,11 @@ const LoadingSynthesis = ({ levelData, onComplete }) => {
         return () => timers.forEach(t => clearTimeout(t));
     }, []); // Run once on mount
 
-    // progress logic
+    // Progress Simulation Logic
     useEffect(() => {
         const progInterval = setInterval(() => {
             setProgress(prev => {
-                const target = phase === 'chaos' ? 40 : phase === 'align' ? 80 : 100;
+                const target = phase === 'detect' ? 40 : phase === 'synthesize' ? 80 : 100;
                 // Accelerate progress if we are behind the target phase
                 const speed = phase === 'complete' ? 5 : 1;
                 if (prev >= target) return prev;
@@ -39,115 +42,136 @@ const LoadingSynthesis = ({ levelData, onComplete }) => {
         return () => clearInterval(progInterval);
     }, [phase]);
 
-    // Visual Elements based on Level Color
-    const color = levelData.color;
-
-    // Fragment Generation
-    const fragments = Array.from({ length: 20 }).map((_, i) => ({
+    // Particle Generation
+    const particles = Array.from({ length: 30 }).map((_, i) => ({
         id: i,
-        x: Math.random() * 100 - 50,
-        y: Math.random() * 100 - 50,
-        scale: Math.random() * 0.5 + 0.5,
-        rotation: Math.random() * 360
+        x: (Math.random() - 0.5) * window.innerWidth,
+        y: (Math.random() - 0.5) * window.innerHeight,
+        size: Math.random() * 3 + 1,
+        duration: Math.random() * 3 + 2
     }));
 
     return (
         <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{
+                opacity: 0, scale: 2, filter: 'blur(20px)',
+                transition: { duration: 0.8, ease: "easeInOut" }
+            }}
             style={{
                 position: 'fixed', inset: 0, zIndex: 9999,
-                background: '#020202', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                overflow: 'hidden'
+                background: '#050505', // Slightly lighter than pure black for depth
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                overflow: 'hidden', color: '#e0e6ed',
+                fontFamily: 'var(--font-mono)'
             }}
         >
-            {/* Background Atmosphere */}
-            <motion.div
-                animate={{ opacity: [0.1, 0.3, 0.1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                style={{
+            {/* 1. Background Environment (Teal/Cyan Gradients & Grid) */}
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                <div style={{
                     position: 'absolute', inset: 0,
-                    background: `radial-gradient(circle at 50% 50%, ${color}10 0%, transparent 70%)`
-                }}
-            />
-
-            {/* Central Synthesis Core */}
-            <div style={{ position: 'relative', width: '400px', height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-
-                {/* Chaos Particles -> Structured Grid */}
-                {fragments.map((frag, i) => (
+                    background: `radial-gradient(circle at 50% 50%, ${color}15 0%, transparent 60%)`
+                }} />
+                <div style={{
+                    position: 'absolute', inset: 0, opacity: 0.1,
+                    backgroundImage: `linear-gradient(${color}20 1px, transparent 1px), linear-gradient(90deg, ${color}20 1px, transparent 1px)`,
+                    backgroundSize: '40px 40px'
+                }} />
+                {/* Floating Particles */}
+                {particles.map(p => (
                     <motion.div
-                        key={frag.id}
-                        initial={{ x: frag.x * 10, y: frag.y * 10, opacity: 0, scale: 0 }}
-                        animate={
-                            phase === 'chaos' ? {
-                                x: [frag.x * 10, frag.x * -10, frag.x * 5],
-                                y: [frag.y * 10, frag.y * 5, frag.y * -5],
-                                opacity: [0, 1, 0.5], scale: [0, 1, 0.5]
-                            } :
-                                phase === 'align' ? {
-                                    x: 0, y: 0, opacity: 1, scale: 1,
-                                    rotate: 0, borderRadius: '2px'
-                                } :
-                                    // Synthesis: Form a distinct shape depending on logic (simplifying to grid ring)
-                                    {
-                                        x: Math.cos(i) * 100,
-                                        y: Math.sin(i) * 100,
-                                        opacity: 1, scale: 0.5,
-                                        background: color
-                                    }
-                        }
-                        transition={{ duration: phase === 'chaos' ? 2 : 1, ease: 'easeInOut' }}
+                        key={p.id}
+                        initial={{ x: p.x, y: p.y, opacity: 0 }}
+                        animate={{
+                            y: [p.y, p.y - 100],
+                            opacity: [0, 0.3, 0]
+                        }}
+                        transition={{
+                            duration: p.duration, repeat: Infinity, ease: 'linear', delay: Math.random() * 2
+                        }}
                         style={{
-                            position: 'absolute', width: '10px', height: '10px',
-                            background: phase === 'chaos' ? 'white' : color,
-                            boxShadow: `0 0 10px ${color}`
+                            position: 'absolute', left: '50%', top: '50%',
+                            width: p.size, height: p.size, borderRadius: '50%',
+                            background: color, filter: 'blur(1px)'
                         }}
                     />
                 ))}
+            </div>
 
-                {/* Main Core Ring */}
-                <svg width="300" height="300" viewBox="0 0 300 300" style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
-                    {/* Base Track */}
-                    <circle cx="150" cy="150" r="140" fill="none" stroke="#222" strokeWidth="2" />
+            {/* 2. Intelligent Circular Energy System */}
+            <div style={{ position: 'relative', width: '300px', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
 
-                    {/* Dynamic Loader Segment */}
+                {/* Rotating Outer Ring segments */}
+                <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                    style={{ position: 'absolute', inset: -20, border: `1px dashed ${color}30`, borderRadius: '50%' }}
+                />
+
+                <svg width="300" height="300" viewBox="0 0 300 300" style={{ transform: 'rotate(-90deg)' }}>
+                    {/* Track */}
+                    <circle cx="150" cy="150" r="130" stroke="rgba(255,255,255,0.05)" strokeWidth="6" fill="none" />
+
+                    {/* Glowing Progress Segment */}
                     <motion.circle
-                        cx="150" cy="150" r="140" fill="none" stroke={color} strokeWidth="4"
-                        strokeDasharray="880" strokeDashoffset="880"
-                        animate={{ strokeDashoffset: 880 - (880 * (progress / 100)) }}
-                        transition={{ type: 'spring', stiffness: 50 }}
-                        style={{ filter: `drop-shadow(0 0 10px ${color})` }}
+                        cx="150" cy="150" r="130" stroke={color} strokeWidth="6" fill="none"
+                        strokeDasharray="816" strokeDashoffset="816"
+                        strokeLinecap="round"
+                        animate={{ strokeDashoffset: 816 - (816 * (progress / 100)) }}
+                        transition={{ type: "spring", stiffness: 40, damping: 20 }}
+                        style={{ filter: `drop-shadow(0 0 15px ${color})` }}
                     />
                 </svg>
 
-                {/* Text Decoder */}
-                <div style={{ position: 'absolute', zIndex: 10, textAlign: 'center' }}>
-                    <div style={{ fontSize: '3rem', fontWeight: 900, color: 'white', fontFamily: 'var(--font-mono)' }}>
+                {/* Central Data Display */}
+                <div style={{ position: 'absolute', textAlign: 'center', flexDirection: 'column', display: 'flex' }}>
+
+                    {/* Percentage */}
+                    <motion.div
+                        key={Math.floor(progress)}
+                        style={{ fontSize: '4rem', fontWeight: 800, color: 'white', lineHeight: 1, textShadow: `0 0 30px ${color}60` }}
+                    >
                         {Math.floor(progress)}%
+                    </motion.div>
+
+                    {/* Dynamic Phase Text */}
+                    <div style={{ marginTop: '10px', height: '20px', overflow: 'hidden' }}>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={phase}
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ y: -20, opacity: 0 }}
+                                style={{
+                                    fontSize: '0.8rem', color: color, letterSpacing: '2px',
+                                    textTransform: 'uppercase', fontWeight: 600
+                                }}
+                            >
+                                {phase === 'detect' && "Analyzing Visual Geometry"}
+                                {phase === 'synthesize' && "Synthesizing Environment"}
+                                {phase === 'polish' && "Preparing Arena"}
+                                {phase === 'complete' && "System Ready"}
+                            </motion.div>
+                        </AnimatePresence>
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: color, letterSpacing: '2px', marginTop: '5px' }}>
-                        {phase === 'chaos' ? 'ESTABLISHING NEURAL LINK' :
-                            phase === 'align' ? 'SYNTHESIZING ENVIRONMENT' :
-                                'FINALIZING SEQ'}
-                    </div>
+
                 </div>
 
+                {/* Pulse Wave on Completion */}
+                {phase === 'complete' && (
+                    <motion.div
+                        initial={{ scale: 0.8, opacity: 0.5 }}
+                        animate={{ scale: 3, opacity: 0 }}
+                        transition={{ duration: 0.8 }}
+                        style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', border: `2px solid ${color}` }}
+                    />
+                )}
             </div>
 
-            {/* Bottom Data Stream */}
-            <div style={{ position: 'absolute', bottom: '50px', width: '100%', textAlign: 'center' }}>
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={phase}
-                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#666', letterSpacing: '4px' }}
-                    >
-                        {phase === 'chaos' && `// DECRYPTING SECTOR 0${levelData.id || 1} DATA STREAM...`}
-                        {phase === 'align' && `// RECONSTRUCTING VISUAL GEOMETRY...`}
-                        {phase === 'synthesis' && `// OPTIMIZING RENDER PIPELINE...`}
-                        {phase === 'complete' && `// READY FOR DEPLOYMENT`}
-                    </motion.div>
-                </AnimatePresence>
+            {/* Bottom Status Line */}
+            <div style={{ position: 'absolute', bottom: '60px', width: '100%', textAlign: 'center', opacity: 0.5 }}>
+                <div style={{ fontSize: '0.7rem', letterSpacing: '4px' }}>ESTIMATING RENDER COMPLEXITY...</div>
             </div>
 
         </motion.div>
