@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import useGameStore from '../store/useGameStore';
-import Navbar from '../components/Navbar';
 import { motion } from 'framer-motion';
-import { RotateCcw, Home as HomeIcon, Share2, Award, TrendingUp, Cpu } from 'lucide-react';
+import { RotateCcw, Home as HomeIcon, CheckCircle2, Trophy, Crosshair, Zap, Brain, Layers } from 'lucide-react';
 
 const Results = () => {
-    const { setCurrentView, gameState, resetGame, gameConfig } = useGameStore();
+    const { setCurrentView, gameState, resetGame } = useGameStore();
     const [displayedScore, setDisplayedScore] = useState(0);
 
     // Animated Score Counter
@@ -17,7 +16,7 @@ const Results = () => {
                 clearInterval(interval);
                 return target;
             });
-        }, 20);
+        }, 15);
         return () => clearInterval(interval);
     }, [gameState.totalScore]);
 
@@ -31,150 +30,201 @@ const Results = () => {
         setCurrentView('home');
     };
 
-    // Mock Breakdown Data (simulating AI analysis)
-    const breakdown = [
-        { label: 'SEMANTIC STRUCTURE', val: 92, color: 'var(--tac-cyan)' },
-        { label: 'LIGHTING ACCURACY', val: 88, color: '#ff3864' },
-        { label: 'COMPOSITION MATCH', val: 95, color: '#bc13fe' },
-        { label: 'STYLISTIC INTEGRITY', val: 84, color: '#ffe600' },
-    ];
-
+    // Calculate Rank based on score
     const getRank = (score) => {
-        if (score >= 95) return { label: 'PROPHET', color: '#bc13fe' };
-        if (score >= 90) return { label: 'ARCHITECT', color: 'var(--tac-cyan)' };
-        if (score >= 80) return { label: 'OPERATOR', color: '#4dffb5' };
-        if (score >= 60) return { label: 'INITIATE', color: '#ccc' };
-        return { label: 'RECRUIT', color: '#666' };
+        if (score >= 95) return { label: 'PROPHET', color: '#bc13fe', sub: 'LEGENDARY TIER' };
+        if (score >= 90) return { label: 'ARCHITECT', color: '#40f0ff', sub: 'MASTER TIER' };
+        if (score >= 80) return { label: 'OPERATOR', color: '#4dffb5', sub: 'ELITE TIER' };
+        if (score >= 60) return { label: 'INITIATE', color: '#ffd60a', sub: 'STANDARD TIER' };
+        return { label: 'RECRUIT', color: '#666', sub: 'BASIC TIER' };
     };
 
     const rank = getRank(gameState.totalScore || 0);
+    const scoreVal = gameState.totalScore || 0;
+
+    // Use actual scores from game state if available, or fallback to mock data structure
+    const levelScores = gameState.scores && gameState.scores.length > 0
+        ? gameState.scores.map((score, i) => ({ id: i + 1, score: Math.round(score), label: ['OPTICS', 'STRUCTURE', 'INTEGRITY', 'CORE'][i] || `SECTOR 0${i + 1}` }))
+        : [
+            { id: 1, label: 'OPTICS', score: 85 },
+            { id: 2, label: 'STRUCTURE', score: 92 },
+            { id: 3, label: 'INTEGRITY', score: 78 },
+            { id: 4, label: 'CORE', score: 95 }
+        ];
 
     return (
         <div style={{
             height: '100vh', width: '100vw',
-            background: '#020202', color: 'white',
+            background: '#050505', color: 'white',
             position: 'relative', overflow: 'hidden',
             fontFamily: 'var(--font-mono)',
-            display: 'flex', flexDirection: 'column',
-            paddingTop: '60px'
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
         }}>
-            {/* Background Matrix */}
-            <div style={{ position: 'absolute', inset: 0, opacity: 0.1, pointerEvents: 'none' }}>
+
+            {/* 1. Background Environment */}
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                {/* Grid */}
                 <div style={{
-                    width: '200%', height: '200%',
-                    background: 'linear-gradient(transparent 1px, #1a1a1a 1px), linear-gradient(90deg, transparent 1px, #1a1a1a 1px)',
-                    backgroundSize: '40px 40px',
-                    transform: 'perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px)',
-                    border: '1px solid #333'
+                    position: 'absolute', inset: 0,
+                    backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
+                    backgroundSize: '50px 50px', opacity: 0.5
+                }} />
+                {/* Glow Spot */}
+                <div style={{
+                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                    width: '80vw', height: '80vh',
+                    background: `radial-gradient(circle, ${rank.color}10 0%, transparent 60%)`,
+                    filter: 'blur(80px)'
                 }} />
             </div>
 
-            <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-                <div style={{ width: '100%', maxWidth: '1400px', display: 'flex', gap: '4rem', padding: '2rem' }}>
+            {/* 2. Main Content Container */}
+            <div style={{
+                width: '90%', maxWidth: '1200px',
+                display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '4rem',
+                zIndex: 10
+            }}>
 
-                    {/* LEFT COL: Hero Score & Rank */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                            style={{
-                                padding: '3rem', border: '1px solid rgba(255,255,255,0.1)',
-                                background: 'rgba(20,20,30,0.6)', backdropFilter: 'blur(20px)',
-                                position: 'relative', overflow: 'hidden'
-                            }}
-                        >
-                            <div style={{ position: 'absolute', top: 0, left: 0, padding: '10px 20px', background: rank.color, color: 'black', fontWeight: 900, fontSize: '0.8rem' }}>
-                                CLASSIFICATION ASSIGNED
-                            </div>
-
-                            <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-                                <div style={{ fontSize: '1rem', color: '#888', letterSpacing: '4px', marginBottom: '1rem' }}>AGGREGATE PERFORMANCE</div>
-                                <div style={{
-                                    fontSize: '8rem', fontWeight: 900, lineHeight: 0.9,
-                                    textShadow: `0 0 50px ${rank.color}40`, color: 'white'
-                                }}>
-                                    {displayedScore}%
-                                </div>
-                                <div style={{ fontSize: '3rem', fontWeight: 900, color: rank.color, letterSpacing: '2px', marginTop: '-10px', textTransform: 'uppercase' }}>
-                                    {rank.label}
-                                </div>
-                            </div>
-                        </motion.div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <TrendingUp color="#4dffb5" />
-                                <div>
-                                    <div style={{ fontSize: '0.7rem', color: '#888' }}>ELIMINATIONS</div>
-                                    <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>TOP 5%</div>
-                                </div>
-                            </div>
-                            <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <Cpu color="#ff3864" />
-                                <div>
-                                    <div style={{ fontSize: '0.7rem', color: '#888' }}>LATENCY</div>
-                                    <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>42ms</div>
-                                </div>
-                            </div>
-                        </div>
-
+                {/* LEFT COL: Rank Identity */}
+                <motion.div
+                    initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}
+                    style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+                >
+                    <div style={{
+                        fontSize: '4rem', fontWeight: 900, lineHeight: 1, letterSpacing: '-2px',
+                        marginBottom: '10px', textShadow: `0 0 40px ${rank.color}60`
+                    }}>
+                        {rank.label}
+                    </div>
+                    <div style={{
+                        display: 'inline-block', padding: '4px 12px', background: rank.color, color: '#000',
+                        fontWeight: 800, fontSize: '0.9rem', letterSpacing: '2px', alignSelf: 'flex-start',
+                        borderRadius: '2px', marginBottom: '3rem'
+                    }}>
+                        {rank.sub}
                     </div>
 
-                    {/* RIGHT COL: Detailed Analysis */}
-                    <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    {/* Stats Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div style={{
+                            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)',
+                            padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '5px'
+                        }}>
+                            <div style={{ color: '#666', fontSize: '0.7rem', letterSpacing: '1px' }}>ACCURACY</div>
+                            <div style={{ fontSize: '1.8rem', fontWeight: 700 }}>94%</div>
+                            <div style={{ height: '2px', width: '100%', background: '#333', marginTop: '5px' }}>
+                                <div style={{ height: '100%', width: '94%', background: '#fff' }} />
+                            </div>
+                        </div>
+                        <div style={{
+                            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)',
+                            padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '5px'
+                        }}>
+                            <div style={{ color: '#666', fontSize: '0.7rem', letterSpacing: '1px' }}>SPEED</div>
+                            <div style={{ fontSize: '1.8rem', fontWeight: 700 }}>1.2s</div>
+                            <div style={{ height: '2px', width: '100%', background: '#333', marginTop: '5px' }}>
+                                <div style={{ height: '100%', width: '85%', background: rank.color }} />
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
 
-                        <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <Activity size={18} color="var(--tac-cyan)" />
-                            <span style={{ fontSize: '0.9rem', letterSpacing: '2px', color: 'var(--tac-cyan)' }}>NEURAL ANALYSIS BREAKDOWN</span>
+                {/* RIGHT COL: Mission Report */}
+                <motion.div
+                    initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 }}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                >
+                    <div style={{
+                        border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(10,10,10,0.8)',
+                        backdropFilter: 'blur(20px)', padding: '3rem', position: 'relative'
+                    }}>
+                        {/* Header Decoration */}
+                        <div style={{
+                            position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)',
+                            width: '200px', height: '2px', background: rank.color,
+                            boxShadow: `0 0 20px ${rank.color}`
+                        }} />
+                        <div style={{
+                            position: 'absolute', top: 0, right: 0, width: '20px', height: '20px',
+                            borderTop: '2px solid rgba(255,255,255,0.2)', borderRight: '2px solid rgba(255,255,255,0.2)'
+                        }} />
+                        <div style={{
+                            position: 'absolute', bottom: 0, left: 0, width: '20px', height: '20px',
+                            borderBottom: '2px solid rgba(255,255,255,0.2)', borderLeft: '2px solid rgba(255,255,255,0.2)'
+                        }} />
+
+                        {/* Title */}
+                        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                            <h2 style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '4px', marginBottom: '0.5rem' }}>MISSION COMPLETE</h2>
+                            <div style={{ color: '#666', fontSize: '0.8rem', letterSpacing: '2px' }}>NEURAL SYNC ESTABLISHED SUCCESSFULLY</div>
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                            {breakdown.map((item, i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, x: 50 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 0.2 * i }}
-                                >
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8rem', color: '#ccc' }}>
-                                        <span>{item.label}</span>
-                                        <span style={{ color: item.color }}>{item.val}%</span>
+                        {/* Round Breakdown */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
+                            {levelScores.map((lvl, i) => (
+                                <div key={lvl.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid #222' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        <div style={{
+                                            width: '24px', height: '24px', borderRadius: '50%', background: '#1a1a1a',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem',
+                                            border: '1px solid #333'
+                                        }}>{lvl.id}</div>
+                                        <div>
+                                            <div style={{ fontSize: '0.9rem', fontWeight: 700, letterSpacing: '1px' }}>{lvl.label}</div>
+                                        </div>
                                     </div>
-                                    <div style={{ height: '4px', width: '100%', background: 'rgba(255,255,255,0.1)', position: 'relative' }}>
-                                        <motion.div
-                                            initial={{ width: 0 }} animate={{ width: `${item.val}%` }}
-                                            transition={{ duration: 1, delay: 0.5 + (i * 0.1) }}
-                                            style={{ height: '100%', background: item.color, boxShadow: `0 0 10px ${item.color}` }}
-                                        />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <div style={{
+                                            height: '4px', width: '100px', background: '#1a1a1a', borderRadius: '2px', overflow: 'hidden'
+                                        }}>
+                                            <motion.div
+                                                initial={{ width: 0 }} animate={{ width: `${lvl.score}%` }} transition={{ delay: 0.8 + (i * 0.1), duration: 1 }}
+                                                style={{ height: '100%', background: rank.color }}
+                                            />
+                                        </div>
+                                        <div style={{ width: '40px', textAlign: 'right', fontWeight: 700 }}>{lvl.score}</div>
                                     </div>
-                                </motion.div>
+                                </div>
                             ))}
                         </div>
 
-                        <div style={{ marginTop: '4rem', display: 'flex', gap: '1rem' }}>
+                        {/* Total Score */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
+                            <div style={{ fontSize: '0.8rem', color: '#888', letterSpacing: '2px' }}>TOTAL SCORE</div>
+                            <div style={{ fontSize: '3rem', fontWeight: 900, color: rank.color, lineHeight: 1 }}>{displayedScore}</div>
+                        </div>
+
+                        {/* Actions */}
+                        <div style={{ display: 'flex', gap: '1rem' }}>
                             <button
                                 onClick={handlePlayAgain}
-                                className="btn-primary"
-                                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                                className="hover-brightness"
+                                style={{
+                                    flex: 1, padding: '16px', background: 'white', color: 'black',
+                                    border: 'none', fontWeight: 900, fontSize: '0.9rem', letterSpacing: '1px',
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                                }}
                             >
-                                <RotateCcw size={18} /> INITIATE REMATCH
+                                <RotateCcw size={18} /> DEPLOY AGAIN
                             </button>
                             <button
                                 onClick={handleHome}
+                                className="hover-brightness"
                                 style={{
-                                    flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                                    cursor: 'pointer', fontFamily: 'var(--font-mono)', fontWeight: 700
+                                    flex: 1, padding: '16px', background: 'transparent', color: 'white',
+                                    border: '1px solid rgba(255,255,255,0.2)', fontWeight: 900, fontSize: '0.9rem', letterSpacing: '1px',
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
                                 }}
                             >
-                                <HomeIcon size={18} /> BASE
+                                <HomeIcon size={18} /> RETURN TO BASE
                             </button>
                         </div>
 
                     </div>
+                </motion.div>
 
-                </div>
-            </main>
+            </div>
+
         </div>
     );
 };
