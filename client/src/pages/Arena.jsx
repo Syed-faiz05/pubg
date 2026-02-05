@@ -34,20 +34,20 @@ const Arena = () => {
                 description: "Analyze the target. Deconstruct visual elements."
             };
             case 2: return {
-                id: 2, title: "NEURAL SYNC", subtitle: "ACCELERATE PROCESSING",
-                color: "#bf5af2", icon: <Share2 size={24} />, // Violet
+                id: 2, title: "STRUCTURAL SYNC", subtitle: "COMPLEXITY RISING",
+                color: "#bf5af2", icon: <Layers size={24} />, // Violet
                 noiseOpacity: 0.08,
                 uiStyle: "dynamic",
                 animMode: "pulse",
-                description: "Synthesize patterns. Increase input velocity."
+                description: "Identify structural patterns. Geometry is key."
             };
             case 3: return {
-                id: 3, title: "CRITICAL FLUX", subtitle: "MAINTAIN INTEGRITY",
+                id: 3, title: "MEMORY FRAGMENT", subtitle: "DATA CORRUPTION",
                 color: "#ff3b30", icon: <AlertTriangle size={24} />, // Red
                 noiseOpacity: 0.15,
                 uiStyle: "stress",
                 animMode: "shake",
-                description: "System unstable. Perform under cognitive load."
+                description: "Signal unstable. Rely on visual memory."
             };
             case 4: return {
                 id: 4, title: "ASCENSION", subtitle: "ACHIEVE RESONANCE",
@@ -224,21 +224,42 @@ const Arena = () => {
                                 }}
                             />
 
-                            {/* Valid Signal Image */}
                             <div style={{ position: 'relative', width: '100%', height: '100%', padding: '20px' }}>
                                 <div style={{
                                     width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden',
                                     border: `1px solid ${currentLevelData.color}30`,
                                     position: 'relative'
                                 }}>
-                                    <img
+                                    <motion.img
                                         src="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=800"
+                                        animate={
+                                            currentLevel === 3 ? {
+                                                opacity: [1, 0.2, 1, 0, 0.8],
+                                                filter: ['blur(0px)', 'blur(5px)', 'blur(0px)', 'blur(10px)', 'blur(0px)']
+                                            } : { opacity: 1, filter: 'blur(0px)' }
+                                        }
+                                        transition={
+                                            currentLevel === 3 ? {
+                                                duration: 4, repeat: Infinity, repeatType: 'mirror', ease: "easeInOut"
+                                            } : {}
+                                        }
                                         style={{
                                             width: '100%', height: '100%', objectFit: 'cover',
                                             filter: 'contrast(1.2) brightness(1.1) saturate(1.2)',
                                             opacity: 0.9 + (Math.random() * 0.1)
                                         }}
                                     />
+
+                                    {/* Round 2: Structural Grid Overlay */}
+                                    {currentLevel === 2 && (
+                                        <div style={{
+                                            position: 'absolute', inset: 0,
+                                            backgroundImage: `linear-gradient(${currentLevelData.color}40 1px, transparent 1px), linear-gradient(90deg, ${currentLevelData.color}40 1px, transparent 1px)`,
+                                            backgroundSize: '40px 40px',
+                                            opacity: 0.4, pointerEvents: 'none'
+                                        }} />
+                                    )}
+
                                     {/* Scanline Overlay for Round 2+ */}
                                     {currentLevel >= 2 && (
                                         <div style={{
@@ -247,11 +268,12 @@ const Arena = () => {
                                             backgroundSize: '100% 2px, 3px 100%', pointerEvents: 'none'
                                         }} />
                                     )}
-                                    {/* Glitch Overlay for Round 3 */}
+
+                                    {/* Glitch Overlay for Round 3 (Memory) */}
                                     {currentLevel === 3 && (
                                         <motion.div
-                                            animate={{ opacity: [0, 0.2, 0] }}
-                                            transition={{ duration: 0.2, repeat: Infinity, repeatDelay: Math.random() * 3 }}
+                                            animate={{ opacity: [0, 0.4, 0] }}
+                                            transition={{ duration: 0.2, repeat: Infinity, repeatDelay: Math.random() * 2 }}
                                             style={{ position: 'absolute', inset: 0, background: 'rgba(255,0,0,0.2)', mixBlendMode: 'color-dodge' }}
                                         />
                                     )}
