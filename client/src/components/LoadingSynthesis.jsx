@@ -5,34 +5,39 @@ const LoadingSynthesis = ({ levelData, onComplete }) => {
     const [progress, setProgress] = useState(0);
     const [phase, setPhase] = useState('chaos'); // 'chaos', 'align', 'synthesis', 'complete'
 
+    // sequence logic
     useEffect(() => {
-        // Synthesis Simulation
-        const intervals = [];
+        const timers = [];
 
         // 0-40%: Rapid Data Ingest (Chaos)
-        intervals.push(setTimeout(() => setPhase('align'), 1500));
+        timers.push(setTimeout(() => setPhase('align'), 1500));
 
         // 40-80%: Structural Alignment (Order)
-        intervals.push(setTimeout(() => setPhase('synthesis'), 3000));
+        timers.push(setTimeout(() => setPhase('synthesis'), 3000));
 
         // 80-100%: Final Locking
-        intervals.push(setTimeout(() => {
+        timers.push(setTimeout(() => {
             setPhase('complete');
-            setTimeout(onComplete, 800); // Slight pause before unmounting
+            setTimeout(onComplete, 800);
         }, 4500));
 
-        // Smooth Progress Counter
+        return () => timers.forEach(t => clearTimeout(t));
+    }, []); // Run once on mount
+
+    // progress logic
+    useEffect(() => {
         const progInterval = setInterval(() => {
             setProgress(prev => {
                 const target = phase === 'chaos' ? 40 : phase === 'align' ? 80 : 100;
+                // Accelerate progress if we are behind the target phase
+                const speed = phase === 'complete' ? 5 : 1;
                 if (prev >= target) return prev;
-                return prev + (Math.random() * 2);
+                return Math.min(prev + (Math.random() * 2 * speed), target);
             });
         }, 50);
-        intervals.push(progInterval);
 
-        return () => intervals.forEach(i => (typeof i === 'number' ? clearInterval(i) : clearTimeout(i)));
-    }, [phase, onComplete]);
+        return () => clearInterval(progInterval);
+    }, [phase]);
 
     // Visual Elements based on Level Color
     const color = levelData.color;
