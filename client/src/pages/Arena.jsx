@@ -5,7 +5,8 @@ import LoadingSynthesis from '../components/LoadingSynthesis';
 import {
     Clock, Sparkles, Wand2, Image as ImageIcon,
     AlertCircle, Check, ArrowRight, Zap, Target,
-    Maximize2, Command, Terminal, Activity, Eye, Brain, Focus
+    Maximize2, Command, Terminal, Activity, Eye, Brain, Focus,
+    Share2, AlertTriangle, Layers, Disc
 } from 'lucide-react';
 
 const Arena = () => {
@@ -25,28 +26,36 @@ const Arena = () => {
     const getLevelConfig = (level) => {
         switch (level) {
             case 1: return {
-                id: 1, title: "VISUAL LOGIC", subtitle: "DECODE THE SIGNAL",
+                id: 1, title: "VISUAL LOGIC", subtitle: "ESTABLISH BASELINE",
                 color: "#40f0ff", icon: <Target size={24} />,
-                noiseOpacity: 0.05,
-                uiStyle: "clean"
+                noiseOpacity: 0.03,
+                uiStyle: "clean",
+                animMode: "stable",
+                description: "Analyze the target. Deconstruct visual elements."
             };
             case 2: return {
-                id: 2, title: "SIGNAL DETECTION", subtitle: "SYNTHESIZE PATTERNS",
-                color: "#d56aff", icon: <Eye size={24} />,
-                noiseOpacity: 0.1, // More noise
-                uiStyle: "glitch"
+                id: 2, title: "NEURAL SYNC", subtitle: "ACCELERATE PROCESSING",
+                color: "#bf5af2", icon: <Share2 size={24} />, // Violet
+                noiseOpacity: 0.08,
+                uiStyle: "dynamic",
+                animMode: "pulse",
+                description: "Synthesize patterns. Increase input velocity."
             };
             case 3: return {
-                id: 3, title: "COGNITIVE PRESSURE", subtitle: "PERFORM UNDER STRESS",
-                color: "#ff5c7f", icon: <Brain size={24} />,
-                noiseOpacity: 0.08,
-                uiStyle: "intense" // Heartbeat effect
+                id: 3, title: "CRITICAL FLUX", subtitle: "MAINTAIN INTEGRITY",
+                color: "#ff3b30", icon: <AlertTriangle size={24} />, // Red
+                noiseOpacity: 0.15,
+                uiStyle: "stress",
+                animMode: "shake",
+                description: "System unstable. Perform under cognitive load."
             };
             case 4: return {
-                id: 4, title: "ARCHITECT MODE", subtitle: "TOTAL MASTERY",
-                color: "#4dffb5", icon: <Zap size={24} />,
+                id: 4, title: "ASCENSION", subtitle: "ACHIEVE RESONANCE",
+                color: "#ffd60a", icon: <Zap size={24} />, // Gold
                 noiseOpacity: 0,
-                uiStyle: "minimal" // UI Recedes
+                uiStyle: "flow",
+                animMode: "levitate",
+                description: "Total mastery. Architect state achieved."
             };
             default: return { title: "UNKNOWN", color: "#fff" };
         }
@@ -83,7 +92,7 @@ const Arena = () => {
         if (!prompt.trim()) return;
         setIsGenerating(true);
 
-        // Simulation delay varies by level?
+        // Simulation delay varies by level
         setTimeout(() => {
             setIsGenerating(false);
             setGeneratedResult({
@@ -110,10 +119,14 @@ const Arena = () => {
     // Calculate intensity based on input length
     const inputIntensity = Math.min(prompt.length / 50, 1);
 
-    // Dynamic UI Styles based on Round
-    const isArchitectMode = currentLevelData.uiStyle === 'minimal';
-    const isStressMode = currentLevelData.uiStyle === 'intense';
-    const isGlitchMode = currentLevelData.uiStyle === 'glitch';
+    // Dynamic UI Styles based on Round logic
+    // Anim Variants
+    const containerVariants = {
+        stable: { opacity: 1 },
+        pulse: { opacity: 1, scale: [1, 1.002, 1], transition: { duration: 4, repeat: Infinity } },
+        shake: { opacity: 1, x: [0, -1, 1, 0], transition: { duration: 0.2, repeat: Infinity, repeatDelay: Math.random() } },
+        levitate: { opacity: 1, y: [0, -5, 0], transition: { duration: 6, repeat: Infinity, ease: 'easeInOut' } }
+    };
 
     return (
         <div style={{
@@ -131,7 +144,8 @@ const Arena = () => {
 
             {/* MAIN CONTENT (Fades in after loading) */}
             <motion.div
-                animate={{ opacity: introState === 'active' ? 1 : 0 }}
+                animate={introState === 'active' ? currentLevelData.animMode : { opacity: 0 }}
+                variants={containerVariants}
                 transition={{ duration: 0.5 }}
                 style={{ height: '100%', width: '100%', position: 'relative' }}
             >
@@ -140,10 +154,10 @@ const Arena = () => {
                 <motion.div
                     className="absolute inset-0 pointer-events-none"
                     animate={{
-                        background: `radial-gradient(circle at 30% 50%, ${currentLevelData.color}10 0%, transparent 60%)`,
-                        opacity: isStressMode && timer < 10 ? [0.4, 0.6, 0.4] : 0.4 + (inputIntensity * 0.3)
+                        background: `radial-gradient(circle at 30% 50%, ${currentLevelData.color}15 0%, transparent 60%)`,
+                        opacity: currentLevelData.uiStyle === 'stress' && timer < 15 ? [0.3, 0.5, 0.3] : 0.4 + (inputIntensity * 0.2)
                     }}
-                    transition={{ duration: isStressMode ? 0.5 : 2, repeat: Infinity, repeatType: 'reverse' }}
+                    transition={{ duration: currentLevelData.uiStyle === 'stress' ? 0.5 : 4, repeat: Infinity, repeatType: 'reverse' }}
                 />
 
                 {/* Background Texture - Obsidian / Digital Noise */}
@@ -154,7 +168,10 @@ const Arena = () => {
                     }}
                 />
 
-                {/* INTRO TITLE SEQUENCE (Replaced by Loader, but keeping subtle overlay if needed, removing for now to avoid clash) */}
+                {/* Round Indicator Watermark */}
+                <div style={{ position: 'absolute', top: '10%', right: '10%', fontSize: '12rem', fontWeight: 900, color: 'white', opacity: 0.02, pointerEvents: 'none' }}>
+                    0{currentLevel}
+                </div>
 
                 {/* MAIN GAMEPLAY INTERFACE */}
                 <div style={{ position: 'relative', zIndex: 10, height: '100%', display: 'flex' }}>
@@ -168,7 +185,7 @@ const Arena = () => {
                         <motion.div
                             animate={{
                                 boxShadow: `0 0 ${30 + (inputIntensity * 50)}px ${currentLevelData.color}15`,
-                                scale: isStressMode && timer < 15 ? [1, 1.01, 1] : 1
+                                scale: currentLevelData.uiStyle === 'stress' && timer < 15 ? [1, 1.01, 1] : 1
                             }}
                             transition={{
                                 scale: { duration: 0.5, repeat: Infinity },
@@ -219,21 +236,31 @@ const Arena = () => {
                                         style={{
                                             width: '100%', height: '100%', objectFit: 'cover',
                                             filter: 'contrast(1.2) brightness(1.1) saturate(1.2)',
-                                            opacity: 0.9
+                                            opacity: 0.9 + (Math.random() * 0.1)
                                         }}
                                     />
-                                    {/* Scanline Overlay */}
-                                    <div style={{
-                                        position: 'absolute', inset: 0,
-                                        background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))',
-                                        backgroundSize: '100% 2px, 3px 100%', pointerEvents: 'none'
-                                    }} />
+                                    {/* Scanline Overlay for Round 2+ */}
+                                    {currentLevel >= 2 && (
+                                        <div style={{
+                                            position: 'absolute', inset: 0,
+                                            background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))',
+                                            backgroundSize: '100% 2px, 3px 100%', pointerEvents: 'none'
+                                        }} />
+                                    )}
+                                    {/* Glitch Overlay for Round 3 */}
+                                    {currentLevel === 3 && (
+                                        <motion.div
+                                            animate={{ opacity: [0, 0.2, 0] }}
+                                            transition={{ duration: 0.2, repeat: Infinity, repeatDelay: Math.random() * 3 }}
+                                            style={{ position: 'absolute', inset: 0, background: 'rgba(255,0,0,0.2)', mixBlendMode: 'color-dodge' }}
+                                        />
+                                    )}
                                 </div>
                             </div>
 
                             {/* Chamber UI Overlay */}
                             <div style={{ position: 'absolute', top: '30px', left: '30px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" style={{ boxShadow: '0 0 10px red' }} />
+                                <div className="w-2 h-2 rounded-full" style={{ background: currentLevelData.color, boxShadow: `0 0 10px ${currentLevelData.color}` }} />
                                 <span style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '2px', color: 'rgba(255,255,255,0.9)' }}>
                                     LIVE SIGNAL FEED
                                 </span>
@@ -252,28 +279,27 @@ const Arena = () => {
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 6rem' }}>
 
                         {/* FUI HUD HEADER */}
-                        {!isArchitectMode && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                    <div style={{ width: '40px', height: '40px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        {currentLevelData.icon}
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize: '0.7rem', color: '#666', letterSpacing: '2px', marginBottom: '2px' }}>MISSION OBJECTIVE</div>
-                                        <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'white', letterSpacing: '1px' }}>RECONSTRUCT VISUAL DATA</div>
-                                    </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                <div style={{ width: '40px', height: '40px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {currentLevelData.icon}
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{
-                                        fontSize: '3.5rem', fontWeight: 500, lineHeight: 1,
-                                        color: timer < 10 ? '#ef4444' : 'white',
-                                        fontFamily: 'var(--font-mono)', letterSpacing: '-2px'
-                                    }}>
-                                        {timer < 10 ? `0${timer}` : timer}<span style={{ fontSize: '1rem', opacity: 0.5, letterSpacing: '0' }}>s</span>
-                                    </div>
+                                <div>
+                                    <div style={{ fontSize: '0.7rem', color: '#666', letterSpacing: '2px', marginBottom: '2px' }}>MISSION OBJECTIVE</div>
+                                    <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'white', letterSpacing: '1px' }}>{currentLevelData.subtitle}</div>
                                 </div>
                             </div>
-                        )}
+                            <div style={{ textAlign: 'right' }}>
+                                <div style={{
+                                    fontSize: '3.5rem', fontWeight: 500, lineHeight: 1,
+                                    color: currentLevel === 3 ? '#ff3b30' : timer < 10 ? '#ef4444' : 'white', // Intense red in round 3
+                                    fontFamily: 'var(--font-mono)', letterSpacing: '-2px',
+                                    textShadow: currentLevel === 3 ? '0 0 10px red' : 'none'
+                                }}>
+                                    {timer < 10 ? `0${timer}` : timer}<span style={{ fontSize: '1rem', opacity: 0.5, letterSpacing: '0' }}>s</span>
+                                </div>
+                            </div>
+                        </div>
 
 
                         {/* FLOATING GLASS INPUT TERMINAL */}
@@ -289,7 +315,7 @@ const Arena = () => {
                                         style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
                                     >
                                         <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'rgba(255,255,255,0.1)', lineHeight: 1.1 }}>
-                                            DESCRIBE<br />THE SIGNAL<br />TO ENGAGE
+                                            {currentLevelData.description.split('. ').map((s, i) => <div key={i}>{s}</div>)}
                                         </h2>
                                     </motion.div>
                                 )}
