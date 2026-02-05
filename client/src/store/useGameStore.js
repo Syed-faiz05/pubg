@@ -48,6 +48,19 @@ const useGameStore = create((set, get) => ({
     },
     setGameConfig: (config) => set((state) => ({ gameConfig: { ...state.gameConfig, ...config } })),
 
+    // User API Configuration
+    userApis: [
+        { id: 1, name: 'TITAN-XL', type: 'Realism', charges: 2, key: '', connected: true },
+        { id: 2, name: 'SWIFT-V2', type: 'Speed', charges: 4, key: '', connected: true },
+        { id: 3, name: 'ARTISAN', type: 'Style', charges: 2, key: '', connected: false },
+        { id: 4, name: 'LOGIC-01', type: 'Control', charges: 2, key: '', connected: false },
+    ],
+    updateApiConfig: (index, newConfig) => set((state) => {
+        const newApis = [...state.userApis];
+        newApis[index] = { ...newApis[index], ...newConfig };
+        return { userApis: newApis };
+    }),
+
     // Socket Status
     isConnected: false,
     setIsConnected: (status) => set({ isConnected: status }),

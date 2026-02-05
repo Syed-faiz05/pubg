@@ -2,20 +2,22 @@ import React, { useState, useEffect, useRef } from 'react';
 import useGameStore from '../store/useGameStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSynthesis from '../components/LoadingSynthesis';
+import ApiConfigModal from '../components/ApiConfigModal';
 import {
     Activity, Layers, Target, Zap, AlertTriangle,
     Lock, Sparkles, Clock, AlertCircle, Terminal,
-    Share2, Disc, Settings, Image as ImageIcon
+    Share2, Disc, Settings, Image as ImageIcon, Check
 } from 'lucide-react';
 
 const Arena = () => {
-    const { currentView, setCurrentView, gameState, advanceLevel, gameConfig } = useGameStore();
+    const { currentView, setCurrentView, gameState, advanceLevel, gameConfig, userApis } = useGameStore();
     const [timer, setTimer] = useState(gameConfig?.timeLimit || 60);
     const [prompt, setPrompt] = useState('');
     const [negativePrompt, setNegativePrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedResult, setGeneratedResult] = useState(null);
     const [introState, setIntroState] = useState('loading');
+    const [isApiModalOpen, setIsApiModalOpen] = useState(false);
     const [interactionStarted, setInteractionStarted] = useState(false);
     const inputRef = useRef(null);
 
@@ -286,19 +288,29 @@ const Arena = () => {
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
-                        <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#444', display: 'flex', gap: '6px' }}>
+                        <button
+                            onClick={() => setIsApiModalOpen(true)}
+                            style={{
+                                background: 'transparent', border: 'none', cursor: 'pointer',
+                                fontSize: '0.7rem', fontWeight: 700, color: '#444', display: 'flex', gap: '6px', alignItems: 'center',
+                                padding: '8px', borderRadius: '4px', transition: 'background 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = '#111'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                        >
                             <Settings size={12} /> API LOADOUT
-                        </div>
+                        </button>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            {['TITAN-XL', 'SWIFT-V2', 'ARTISAN', 'LOGIC-01'].map((api, i) => (
-                                <div key={api} style={{
-                                    padding: '8px 16px', background: i === 0 ? 'rgba(64, 240, 255, 0.1)' : '#111',
-                                    border: i === 0 ? '1px solid #40f0ff' : '1px solid #222',
+                            {userApis.map((api, i) => (
+                                <div key={api.id} style={{
+                                    padding: '8px 16px',
+                                    background: api.connected ? (i === 0 ? 'rgba(64, 240, 255, 0.1)' : '#111') : '#050505',
+                                    border: api.connected ? (i === 0 ? '1px solid #40f0ff' : '1px solid #222') : '1px solid #111',
                                     borderRadius: '4px', display: 'flex', flexDirection: 'column', gap: '2px',
-                                    cursor: 'pointer'
+                                    cursor: 'pointer', opacity: api.connected ? 1 : 0.5
                                 }}>
-                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: i === 0 ? '#40f0ff' : '#888' }}>{api}</div>
-                                    <div style={{ fontSize: '0.6rem', color: '#444' }}>x{i === 1 ? 4 : 2}</div>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: api.connected ? (i === 0 ? '#40f0ff' : '#888') : '#444' }}>{api.name}</div>
+                                    <div style={{ fontSize: '0.6rem', color: '#444' }}>x{api.charges}</div>
                                 </div>
                             ))}
                         </div>
